@@ -272,7 +272,7 @@ class BatchCluster:
                     memory_size=256, vcpu_num=16, 
                     entry_cmd='./run_job.sh',
                     image_id='223004288560.dkr.ecr.us-east-1.amazonaws.com/aws-batch-tutorial:latest',
-                    file_system_id=None, container_path="/usr/local/python_ws/results"):
+                    file_system_id=None, efs_path="/",container_path="/usr/local/python_ws/results"):
         JOBDEF_NAME = jobdef_name
         ROLE_NAME = self.batch_role_response['Role']['RoleName']
         MEMORY_SIZE = memory_size
@@ -305,7 +305,7 @@ class BatchCluster:
                         'name': 'efsmount', #qinjie
                         'efsVolumeConfiguration': {
                             'fileSystemId': FILE_SYSTEM_ID,
-                            'rootDirectory': '/',
+                            'rootDirectory': efs_path,
                         }
                     },
                 ],

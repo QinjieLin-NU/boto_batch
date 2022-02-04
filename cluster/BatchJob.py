@@ -28,6 +28,7 @@ class BatchJob:
         image_name = self.batchjob_config['image_name'] 
         mount_config = self.batchjob_config['mount_config'][0]
         file_id = self.find_efs(mount_config['efs_name'])
+        efs_path = mount_config['efs_path']
         container_path = mount_config['container_path']
         job_name = self.batchjob_config['job_name'] 
         
@@ -42,6 +43,7 @@ class BatchJob:
                                         entry_cmd=entry_cmd,
                                         image_id=image_name,
                                         file_system_id=file_id, #1 means for default efs
+                                        efs_path=efs_path,
                                         container_path=container_path)
         batch_job_name = "job-" + self.batch_clustername + "-" + job_name 
         batch_job_response = self.batch_cluster.sub_job(job_name=batch_job_name, jobdef_resp=batch_jobdef_response)
@@ -50,6 +52,7 @@ class BatchJob:
         if log_output:
             self.batch_cluster.log_job(batch_job_response)
         
+        print("deleting job...")
         # delete job
         self.batch_cluster.deregister_job_definition(batch_jobdef_response)
         self.batch_cluster.destroy_job(batch_job_response)
