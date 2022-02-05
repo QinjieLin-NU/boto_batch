@@ -10,7 +10,7 @@ user=args.user
 with open("config/example_job.yaml",'w') as f:
     for i in x:
         if 'efs_path' in i:
-            i = f'  efs_path: {user}\n'
+            i = '  efs_path: %s\n'%(user)
         if 'job_name' in i:
-            i = f'job_name: job{user}\n'
+            i = 'job_name: job%s\n'%(user)
         f.write(i)
