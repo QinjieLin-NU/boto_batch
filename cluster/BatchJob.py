@@ -6,7 +6,7 @@ def load_config(file_path):
         loaded_config = yaml.safe_load(f)
     return loaded_config
 class BatchJob:
-    def __init__(self, clusterConfigFile="../.cluster/cluster.config", debugLog=False):
+    def __init__(self, clusterConfigFile="../../.cluster/cluster.config", debugLog=False):
         self.cluster_config = load_config(clusterConfigFile)
         self.batch_clustername = "batchjob" +str(uuid.uuid4())[0:4]
         
