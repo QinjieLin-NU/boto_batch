@@ -1,17 +1,16 @@
-job_name: job1
-
-# =================== resource config ===================
+job_name: job101
 cpu_num: 16
-memory_size: 16 # M or G?
-
-# =================== container config ===================
-image_name:  qinjielin/python3.6:v0.2
-entry_cmd: ["python", "test.py"]
+memory_size: 16
+image_name: qinjielin/python3.6:v0.4
+entry_cmd:
+- python
+- /root/work_ws/example/example2.py
 vcpu_num: 1
-mount_config: [
-  {
-    efs_name: code_efs,
-    efs_path: /config/,
-    container_path: /usr/local/python_ws/results,
-  },
-]  #only support one efs mount
+mount_config:
+- efs_name: code_efs
+  efs_path: /user3/
+  container_path: /root/work_ws
+- efs_name: model_efs
+  efs_path: /
+  container_path: /root/data_ws
+

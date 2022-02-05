@@ -26,11 +26,31 @@ class BatchJob:
         vcpu_num = self.batchjob_config['vcpu_num'] 
         entry_cmd = self.batchjob_config['entry_cmd'] 
         image_name = self.batchjob_config['image_name'] 
-        mount_config = self.batchjob_config['mount_config'][0]
-        file_id = self.find_efs(mount_config['efs_name'])
-        efs_path = mount_config['efs_path']
-        container_path = mount_config['container_path']
         job_name = self.batchjob_config['job_name'] 
+        mount_configs = self.batchjob_config['mount_config']
+
+        #generate mount config
+        volumes = []
+        mount_points = []
+        mount_id = 0
+        for mount_config in mount_configs:
+            file_id = self.find_efs(mount_config['efs_name'])
+            efs_path = mount_config['efs_path']
+            container_path = mount_config['container_path']
+            _v={
+                'name': f'efsmount{mount_id}',
+                'efsVolumeConfiguration': {
+                    'fileSystemId': file_id,
+                    'rootDirectory': efs_path,
+                    }
+                }
+            _m={
+                "containerPath": container_path,
+                "sourceVolume": f'efsmount{mount_id}'
+                }
+            volumes.append(_v)
+            mount_points.append(_m)
+            mount_id+=1
         
         # create computer env and job queue
         vpc_id = self.cluster_config['vpc_id']
@@ -38,13 +58,12 @@ class BatchJob:
         
         # submit job
         batch_jobdef_name = "jobdef-" + self.batch_clustername + "-" + job_name 
-        batch_jobdef_response = self.batch_cluster.create_jobdef(jobdef_name=batch_jobdef_name, 
+        batch_jobdef_response = self.batch_cluster.create_jobdef_v2(jobdef_name=batch_jobdef_name, 
                                         memory_size=memory_size, vcpu_num=vcpu_num, 
                                         entry_cmd=entry_cmd,
                                         image_id=image_name,
-                                        file_system_id=file_id, #1 means for default efs
-                                        efs_path=efs_path,
-                                        container_path=container_path)
+                                        volumes=volumes,
+                                        mount_points=mount_points)
         batch_job_name = "job-" + self.batch_clustername + "-" + job_name 
         batch_job_response = self.batch_cluster.sub_job(job_name=batch_job_name, jobdef_resp=batch_jobdef_response)
         

@@ -606,3 +606,50 @@ class BatchCluster:
             print(*args,end=end)
         else:
             return
+
+    def create_jobdef_v2(self, jobdef_name, 
+                    memory_size=256, vcpu_num=16, 
+                    entry_cmd='./run_job.sh',
+                    image_id='223004288560.dkr.ecr.us-east-1.amazonaws.com/aws-batch-tutorial:latest',
+                    volumes=[], mount_points=[]):
+        JOBDEF_NAME = jobdef_name
+        ROLE_NAME = self.batch_role_response['Role']['RoleName']
+        MEMORY_SIZE = memory_size
+        CPU_NUM=vcpu_num
+        ENTRY_CMD = entry_cmd
+        IMAGE_ID = image_id
+        Batch_Role = self.IAM_CLIENT.get_role(RoleName=ROLE_NAME)
+
+        response = self.BATCH_CLIENT.register_job_definition(
+            jobDefinitionName=JOBDEF_NAME,
+            type='container',
+            containerProperties={
+                'image': IMAGE_ID,
+                'memory': MEMORY_SIZE,
+                'vcpus': CPU_NUM,
+                'jobRoleArn': Batch_Role['Role']['Arn'],
+                'executionRoleArn': Batch_Role['Role']['Arn'],
+                'volumes': volumes,
+                "mountPoints": mount_points,
+                'environment': [
+                    {
+                        'name': 'AWS_DEFAULT_REGION',
+                        'value': 'us-east-1',
+                    }
+                ],
+                'command': ENTRY_CMD, #qinjie very important
+            },
+        )
+
+        self.debug_log("create batch job definition:",response['jobDefinitionName'])
+
+        jobdef_status = "None"
+        while True:
+            des_resp = self.BATCH_CLIENT.describe_job_definitions( jobDefinitions=[response['jobDefinitionArn'],],)
+            jobdef_status = des_resp['jobDefinitions'][0]['status']
+            self.debug_log("waiting for job definition to be active...")
+            if jobdef_status=='ACTIVE':
+                break
+            time.sleep(5)
+
+        return response
