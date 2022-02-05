@@ -4,7 +4,7 @@ memory_size: 16
 image_name: qinjielin/python3.6:v0.4
 entry_cmd:
 - python
-- /root/work_ws/example/example1.py
+- /root/work_ws/example/batch_example1.py
 vcpu_num: 1
 mount_config:
 - efs_name: code_efs
